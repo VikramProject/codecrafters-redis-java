@@ -4,7 +4,8 @@ import java.util.Map;
 public class CommandHandler {
     // Simple in-memory data store
     private final Map<String, String> dataStore = new HashMap<>();
-
+    private final Map<String, Long> expiryStore = new HashMap<>();
+    
     public String handle(String[] command) {
         if (command == null || command.length == 0) {
             return "-ERR empty command\r\n";
@@ -18,12 +19,20 @@ public class CommandHandler {
                 if(command.length<3) {
                     yield "-ERR wrong number of arguments for 'set' command\r\n";
                 }
+                if(command.length>4 && command[3].equalsIgnoreCase("PX")) {
+                    Long time = System.currentTimeMillis() + Long.parseLong(command[4]);
+                    expiryStore.put(command[1],time);
+                }
                 dataStore.put(command[1],command[2]);
                 yield "+OK\r\n";
             }
             case "GET" -> {
                 if(command.length<2) {
                     yield "-ERR wrong number of arguments for 'get' command\r\n";
+                }
+                if(expiryStore.containsKey(command[1]) && System.currentTimeMillis()>expiryStore.get(command[1])) {
+                    expiryStore.remove(command[1]);
+                    dataStore.remove(command[1]);
                 }
                 if(!dataStore.containsKey(command[1])) {
                     yield "$-1\r\n";
