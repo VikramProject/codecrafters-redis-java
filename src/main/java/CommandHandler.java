@@ -1,10 +1,14 @@
 import java.util.HashMap;
+import java.util.List;
+import java.util.List;
 import java.util.Map;
 
 public class CommandHandler {
     // Simple in-memory data store
     private final Map<String, String> dataStore = new HashMap<>();
     private final Map<String, Long> expiryStore = new HashMap<>();
+    private final Map<String, List<String>> ListStore = new HashMap<>();
+
     
     public String handle(String[] command) {
         if (command == null || command.length == 0) {
@@ -24,6 +28,18 @@ public class CommandHandler {
                     expiryStore.put(command[1],time);
                 }
                 dataStore.put(command[1],command[2]);
+                yield "+OK\r\n";
+            }
+            case "RPUSH" -> {
+                if(command.length<3) {
+                    yield "-ERR wrong number of arguments for 'rpush' command\r\n";
+                }
+                if(!listStore.containsKey(command[1])){
+                    listStore.put(command[1],new ArrayList<String>());
+                }
+                for(int i=2;i<command.length;i++) {
+                    listStore.get(command[1]).add(command[2]);
+                }
                 yield "+OK\r\n";
             }
             case "GET" -> {
