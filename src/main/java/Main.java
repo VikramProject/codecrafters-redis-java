@@ -1,57 +1,55 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
+    private static final int PORT = 6379;
+    private static final CommandHandler handler = new CommandHandler();
 
-  private static void handleClient(Socket clientSocket) {
-    try{
-      String resp = "+PONG\r\n";
-      InputStream inputStream = clientSocket.getInputStream();
+    private static void handleClient(Socket socket) {
+        try (socket;
+             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+             OutputStream out = socket.getOutputStream()) {
 
-        byte[] buffer = new byte[1024];
-        int bytesRead;
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("*")) {
+                    int count = Integer.parseInt(line.substring(1));
+                    List<String> args = new ArrayList<>();
 
-        while((bytesRead = inputStream.read(buffer))!=-1) {
-          clientSocket.getOutputStream().write(resp.getBytes());
+                    for (int i = 0; i < count; i++) {
+                        reader.readLine(); // Skip the length descriptor line (e.g., "$4")
+                        args.add(reader.readLine()); // Read the actual payload line
+                    }
+
+                    String response = handler.handle(args.toArray(new String[0]));
+                    out.write(response.getBytes(StandardCharsets.UTF_8));
+                    out.flush();
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Connection error: " + e.getMessage());
         }
     }
-    catch(IOException e) {
-      System.out.println("IOException: " + e.getMessage());
-    }
-    finally {
-      try {
-        if (clientSocket != null) {
-          clientSocket.close();
+
+    public static void main(String[] args) {
+        System.out.println("Starting Redis server on port " + PORT);
+
+        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
+            serverSocket.setReuseAddress(true);
+
+            while (true) {
+                Socket clientSocket = serverSocket.accept();
+                new Thread(() -> handleClient(clientSocket)).start();
+            }
+        } catch (IOException e) {
+            System.out.println("Server error: " + e.getMessage());
         }
-      } catch (IOException e) {
-        System.out.println("IOException: " + e.getMessage());
-      }
     }
-  }
-
-  public static void main(String[] args){
-    // You can use print statements as follows for debugging, they'll be visible when running tests.
-    System.out.println("Logs from your program will appear here!");
-
-    // Uncomment the code below to pass the first stage
-    ServerSocket serverSocket = null;
-    int port = 6379;
-    try {
-      serverSocket = new ServerSocket(port);
-
-      // Since the tester restarts your program quite often, setting SO_REUSEADDR
-      // ensures that we don't run into 'Address already in use' errors
-      serverSocket.setReuseAddress(true);
-      while(true) {          
-        // Wait for connection from client.
-        Socket clientSocket = serverSocket.accept();
-        new Thread(()->handleClient(clientSocket)).start();           
-      }
-    }
-    catch(IOException e) {
-      System.out.println("IOException: " + e.getMessage());
-    }
-  }
 }
