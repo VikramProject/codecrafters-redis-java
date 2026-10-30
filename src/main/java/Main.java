@@ -22,7 +22,6 @@ public class Main {
                 if (line.startsWith("*")) {
                     int count = Integer.parseInt(line.substring(1));
                     List<String> args = new ArrayList<>();
-
                     for (int i = 0; i < count; i++) {
                         reader.readLine(); // Skip the length descriptor line (e.g., "$4")
                         args.add(reader.readLine()); // Read the actual payload line
