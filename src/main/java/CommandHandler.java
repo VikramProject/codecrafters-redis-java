@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.List;
@@ -7,7 +8,7 @@ public class CommandHandler {
     // Simple in-memory data store
     private final Map<String, String> dataStore = new HashMap<>();
     private final Map<String, Long> expiryStore = new HashMap<>();
-    private final Map<String, List<String>> ListStore = new HashMap<>();
+    private final Map<String, List<String>> listStore = new HashMap<String, List<String>>();
 
     
     public String handle(String[] command) {
@@ -40,7 +41,8 @@ public class CommandHandler {
                 for(int i=2;i<command.length;i++) {
                     listStore.get(command[1]).add(command[2]);
                 }
-                yield "+OK\r\n";
+                String listSize = ":"+listStore.get(command[1]).size()+"\r\n";
+                yield listSize;
             }
             case "GET" -> {
                 if(command.length<2) {
