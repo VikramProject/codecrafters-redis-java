@@ -3,7 +3,8 @@ import command.DataStore;
 import command.EchoCommand;
 import command.GetCommand;
 import command.PingCommand;
-import command.RpushCommand;
+import command.list.LrangeCommand;
+import command.list.RpushCommand;
 import command.SetCommand;
 
 import java.util.HashMap;
@@ -19,6 +20,7 @@ public class CommandHandler {
         commands.put("SET", new SetCommand(store));
         commands.put("GET", new GetCommand(store));
         commands.put("RPUSH", new RpushCommand(store));
+        commands.put("LRANGE", new LrangeCommand(store));
     }
 
     public String handle(String[] command) {
