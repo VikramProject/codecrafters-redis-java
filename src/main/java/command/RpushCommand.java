@@ -18,7 +18,7 @@ public class RpushCommand implements Command {
             store.listStore.put(command[1],new ArrayList<String>());
         }
         for(int i=2;i<command.length;i++) {
-            store.listStore.get(command[1]).add(command[2]);
+            store.listStore.get(command[1]).add(command[i]);
         }
         return ":"+store.listStore.get(command[1]).size()+"\r\n";
     }
