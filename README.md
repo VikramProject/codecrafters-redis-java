@@ -31,3 +31,23 @@ Note: This section is for stages 2 and beyond.
    `src/main/java/Main.java`.
 1. Run `codecrafters submit` to submit your solution to CodeCrafters. Test
    output will be streamed to your terminal.
+
+# Changes
+
+Implement mock Redis from scratch. Work completed so far:
+
+- Split the `switch` in `CommandHandler` into one private method per command.
+- Added a `Command` interface (`String handle(String[] command)`) in the
+  `command` package, with one class per command: `PingCommand`, `EchoCommand`,
+  `SetCommand` and `GetCommand`.
+- Moved the in-memory maps (strings, expiry times, lists) into a shared
+  `DataStore` that is passed to the commands that need it.
+- Replaced the `switch` with a map from command name to `Command`, so a new
+  command only needs a class and one `commands.put(...)` line.
+- Created the `command.list` package for list commands and moved
+  `RpushCommand` into it.
+- Fixed `RPUSH` so every value is appended, not just the first.
+- Added `LrangeCommand` (`LRANGE key start stop`): both ends included, negative
+  indexes count from the end, out-of-range values are clamped, and an empty
+  array is returned for a missing key or empty range.
+- Moved the array encoding in `LrangeCommand` into its own `encodeRange` method.
